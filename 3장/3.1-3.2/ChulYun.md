@@ -7,7 +7,7 @@
 * 다수의 컨테이너를 유기적으로 연결, 실행, 종료할 뿐만 아니라 상태를 추적하고 보전하는 등 컨테이너를 안정적으로 사용할 수 있게 유지시켜 준다.
 
 ## 쿠버네티스 구성 요소
-![Kubernetes Components](../images/kubernetes_components.png)
+![Kubernetes Components](images/kubernetes_components.png)
 [참고 링크](https://medium.com/devops-mojo/kubernetes-architecture-overview-introduction-to-k8s-architecture-and-understanding-k8s-cluster-components-90e11eb34ccd)
 
 ## Master Node
@@ -53,3 +53,33 @@
 ### Pod
 * 한 개 이상의 컨테이너로 단일 목적의 일을 하기 위해서 모인 단위.
 * 파드는 언제라도 죽을 수 있는 존재.
+
+## 옵셔널한 구성 요소
+
+### Network Plugin
+* 쿠버네티스 클러스터 통신을 위해서는 네트워크 플러그인 선택하고 구성해야 한다.
+* 일반적으로 CNI(Container Network Interface)로 구성하고, 주로 캘리코(Calico), 플래널(Flannel), 위브넷(WeaveNet) 등을 사용한다.
+* CNI 는 구성방식과 지원하는 기능, 성능이 각기 다르므로 사용 목적에 맞게 선택하면 된다.
+  * ex) Calico 는 L3로 컨테이너 네트워크를 구성하고, Flannel 은 L2로 컨테이너 네트워크를 구성한다.
+
+### CoreDNS
+* 쿠버네티스 클러스터에서 도메인 이름을 이용해 통신하는 데 사용하는 DNS Server 이다.
+
+### kube-proxy
+* 쿠버네티스 클러스터는 파드가 위치한 노드에 kube-proxy를 통해 파드가 통신할 수 있는 네트워크를 설정한다.
+* 실제 통신은 br_netfilter와 iptables로 관리한다.
+
+---
+
+## Lifecycle of pod
+1. kubectl을 통해 API Server에 파드 생성 요청
+2. API 서버에 전달된 내용이 있으면 API 서버는 etcd에 전달된 내용을 기록하여 클러스터의 상태 값을 최신 상태로 유지한다.
+3. API 서버에 파드 생성이 요청된 것을 컨트롤러 매니저가 인지하면 파드를 생성하고, 이 상태를 API 서버에 전달한다.
+4. API 서버에 파드가 생성됐다는 정보를 스케줄러가 인지하면, 시케줄러는 생성된 파드를 어떤 워커 노드에 띄울지 결정하고, 해당 워커 노드에 파드를 띄우도록 요청한다.
+5. API 서버에 전달된 정보대로 지정한 워커 노드에 파드가 속해 있는지 스케줄러가 kubelet으로 확인한다.
+6. kubelet에서 컨테이너 런타임으로 파드 생성 요청을 한다.
+7. 파드가 생성되고, 사용 가능한 상태가 된다.
+
+> 쿠버네티스는 절차적으로 진행하는 구조가 아니라 선언적인 시스템 구조를 가지고 있다.
+> 즉, 각 요소가 추구하는 상태를 선언하면 현재 상태와 맞는지 점검하고 그것에 맞추려고 노력하는 구조이다.
+> (주기적으로 폴링을 하는건가?)
