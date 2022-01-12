@@ -83,3 +83,102 @@
 > 쿠버네티스는 절차적으로 진행하는 구조가 아니라 선언적인 시스템 구조를 가지고 있다.
 > 즉, 각 요소가 추구하는 상태를 선언하면 현재 상태와 맞는지 점검하고 그것에 맞추려고 노력하는 구조이다.
 > (주기적으로 폴링을 하는건가?)
+
+---
+
+## 쿠버네티스 기본 사용법 학습하기
+
+### 파드 구성 방법
+* kubectl run
+```shell
+> kubectl run nginx-pod --image=nginx
+# 위 명령을 통해 파드를 쉽게 생성할 수 있다
+# nginx-pod 는 파드 이름
+# --image=nginx 는 생성할 이미지 이름
+```
+
+* kubectl get pod
+  * kubectl get pod -o wide 명령을 통해 IP 정보, Node 등 파드에 대한 다양한 정보를 확인할 수 있다.
+```shell
+> kubectl get pod
+# 생성된 파드를 확인한다
+```
+
+* kubectl create
+  * 위 명령을 통해서도 파드를 생성할 수 있다.
+  * kubectl run 과 다르게 deployment 를 붙여야 한다.
+  * 파드의 이름을 dpy-nginx 로 지정했지만 아래의 결과 화면에서 보이듯이 뒤에 무작위 문자열이 이름 뒤에 붙여져 있는 것을 확인할 수 있다.
+```shell
+> kubectl create deployment dpy-nginx --image=nginx 
+```
+![kubectl create](./images/kubectl_run_and_create.png)
+
+### run 과 create 는 무슨 차이?
+* run 으로 파드를 생성하면 단일 파드 1개만 생성되고 관리된다.
+* deployment 로 파드를 생성하면 디플로이먼트(deployment) 라는 관리 그룹 내에서 파드가 생성된다.
+
+---
+
+## 오브젝트(Object)
+* 쿠버네티스를 사용하는 관점에서 파드와 디플로이먼트는 스펙(spec)과 상태(status) 등의 값을 가지고 있다.
+* 이러한 값을 가지고 있는 파드와 디플로이먼트를 포함해 부르는 단위를 오브젝트라고 한다.
+
+### 기본 오브젝트
+* 파드(Pod)
+  * 쿠버네티스에서 실행되는 최소 단위이다.
+  * 독립적인 공간과 사용 가능한 IP를 가지고 있다.
+  * 하나의 파드는 1개 이상의 컨테이너를 가진다.
+* 네임스페이스(Namespace)
+  * 쿠버네티스 클러스터에서 사용되는 리소스들을 구분하여 관리하는 그룹이다.
+    * default: 특별히 지정하지 않으면 할당된다.
+    * kube-system: 쿠버네티스 시스템에서 사용된다.
+    * metallb-system: 온프레미스에서 쿠버네티스를 사용할 경우 외부에서 쿠버네티스 클러스터 내부로 접속하게 도와주는 컨테이너들이 속해 있다.
+* 볼륨(Volume)
+  * 파드가 생성될 때 파드에서 사용할 수 있는 디렉터리를 제공한다.
+  * 기본적으로 파드는 영속되는 개념이 아니라 제공되는 디렉터리도 임시로 사용하지만, 파드가 사라지더라도 저장과 보존이 가능한 디렉터리를 볼륨 오브젝트를 통해 생성할 수 있다.
+* 서비스(Service)
+  * 파드는 클러스터 내에서 유동적으로 생성되고 파괴되기 때문에 접속 정보를 유지할 수 있도록 서비스를 통해 내/외부로 연결된다.
+  * 서비스는 새로 파드가 생성될 때 부여되는 새로운 IP를 기존에 제공하던 기능과 연결해 준다. (서비스 디스커버리)
+* 디플로이먼트(Deployment)
+  * 디플로이먼트는 애플리케이션 배포의 기본 단위가 되는 리소스이다.
+  * 파드에 기반을 두고 있으며, 레플리카셋 오브젝트를 합쳐 놓은 형태이다.
+  * 레플리카셋은 파드의 개수를 관리 및 제어하는 리소스이고, 디플로이먼트는 리플리카셋을 관리한다.
+  * 레플리카셋은 레플리케이션 컨트롤러(ReplicationController)에서 발전한 형태이다.
+  * 실제로 API 서버와 컨트롤러 매니저는 단순히 파드가 생성되는 것을 감시하는 것이 아니라 디플로이먼트처럼 레플리카셋을 포함하는 오브젝트의 생성을 감시한다.
+
+### 디플로이먼트는 왜 쓰는거지?
+* 레플리카셋은 단순히 파드 수를 보장하는 기능만 제공한다.
+* 롤링 업데이트 기능 등이 추가된 디플로이먼트를 사용하여 파드 수를 관리하면 스케일 인/아웃을 하기 수월하다
+```shell
+> kubectl scale deployment dpy-nginx --replicas=3
+```
+![deployment scale](./images/deployment_scale.png)
+
+### 스펙을 지정해 오브젝트 생성해보기
+```yaml
+apiVersion: apps/v1 # API 버전
+kind: Deployment # 오브젝트 종류
+metadata:
+  name: echo-hname
+  labels:
+    app: nginx
+spec:
+  replicas: 3 # 몇 개의 파드를 생성할지 결정
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: echo-hname
+        image: sysnet4admin/echo-hname # 사용되는 이미지
+```
+* 위 스펙을 보면 어떤 컨테이너를 생성할 지에 대한 스펙이 정의되어 있다.
+* selector 를 통해 레이블을 지정하여 레플리카 수 만큼 파드를 생성한다.
+* kubectl create -f yaml_file.yaml 을 통해 해당 스펙을 실행시킬 수 있다.
+* spec yaml 을 수정하여 이미 생성된 기존의 deployment 를 수정하기 위해서는 kubectl apply 명령을 실행한다.
+  * kubectl apply -f yaml_file.yaml
+
