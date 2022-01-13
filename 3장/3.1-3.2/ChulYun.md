@@ -182,3 +182,52 @@ spec:
 * spec yaml 을 수정하여 이미 생성된 기존의 deployment 를 수정하기 위해서는 kubectl apply 명령을 실행한다.
   * kubectl apply -f yaml_file.yaml
 
+### 디플로이먼트 삭제
+* kubectl delete deployment name
+  * 디플로이먼트에 속한 파드는 상위 디플로이먼트를 삭제해야 파드가 삭제된다.
+```shell
+> kubectl delete deployment echo-hname
+```
+
+### 노드 자원 보호하기
+* 쿠버네티스는 모든 노드에 균등하게 파드를 할당하려고 한다.
+* 문제가 생길 가능성이 있는 노드인 경우 cordon 명령을 통해 해당 노드에 스케줄링 되지 않도록 대상에서 제외 시킬 수 있다.
+```shell
+> kubectl cordon nodeName # 해당 노드에 파드가 스케줄링 되지 않도록 한다.
+> kubectl uncordon nodeName # 해당 노드에 스케줄링 되지 않도록 설정했던 것을 해제한다.
+```
+
+### 노드 유지보수 하기
+* drain은 지정된 노드의 파드들을 모두 삭제하고 다른 노드에 다시 생성합니다.
+* 파드들을 모두 삭제하고, 다른 노드에 새로 생성하는 것이기 때문에 데몬셋이 존재하는 경우 drain으로 삭제할 수 없다.
+  * --ignore-demonsets 옵션을 함께 사용하면 데몬셋을 무시하고 명령을 수행한다.
+```shell
+> kubectl drain nodeName
+> kubectl uncordon nodeName # 해당 노드에 비활성화된 스케줄링을 다시 활성화 시킨다.
+```
+
+### 파드 업데이트하기
+* --record 옵션으로 배포한 정보의 히스토리를 기록할 수 있다.
+* --record 옵션으로 기록된 히스토리는 rollout history 명령으로 확인할 수 있다.
+```shell
+> kubectl apply -f rollout-nginx.yaml --record
+> kubectl rollout history deployment rollout-nginx
+```
+
+* set image 명령으로 파드의 컨테이너 버전을 업데이트 할 수 있다.
+```shell
+> kubectl set image deployment rollout-ngingx nginx=nginx:1.16.0 --record
+```
+
+* describe 명령으로 쿠버네티스의 상태를 살펴볼 때 유용하다.
+````shell
+> kubectl describe deployment rollout-nginx
+````
+
+### 파드 업데이트 실패 시, 복구하기
+* rollout undo 로 명령 실행을 취소하면 마지막 단계에서 전 단계로 상태를 되돌린다.
+* --to-revision 옵션을 사용하면 특정 버전의 상태로 복구할 수 있다.
+```shell
+> kubectl rollout undo deployment rollout-nginx --to-revision=1
+> 
+```
