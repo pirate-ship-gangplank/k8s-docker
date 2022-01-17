@@ -42,3 +42,39 @@ spec:
 * port: 80
 * expose를 사용하면 노드포트의 포트 번호를 지정할 수 없다.
   * 포트번호는 30000~32767 에서 임의로 선택된다.
+
+### 인그레스(Ingress), 인그레스 컨트롤러 (Ingress Controller)
+* 클러스터 내의 서비스에 대한 외부 접근을 관리하는 API 오브젝트. (일반적으로 HTTP를 관리함)
+* 외부의 요청을 처리할 수 있는 NodePort, ExternalIP는 일반적으로 L4에서 처리하며, L7 에서의 요청을 처리할 수 없다.
+* 인그레스는 고유한 주소를 제공해 사용 목적에 따라 다른 응답을 제공할 수 있고, 트래픽에 대한 L4/L7 로드밸런서와 SSL을 처리하는 기능을 제공한다.
+* 인그레스는 규칙을 정의하는 선언적인 오브젝트일 뿐, 외부의 요청을 받아들이는 실제 서버가 아니다.
+* 인그레스 컨트롤러라고 하는 특수한 서버 컨테이너에 적용되어야 인그레스에 적용된 규칙이 활성화 된다.
+* 사용하는 환경에 따라 Nginx 기반의 ingress-nginx를 사용하거나 클라우드 플랫폼에서 제공하는 인그레스 컨트롤러를 이용할 수 있다.
+
+```yaml
+# Ingress Spec Example
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rootSvc
+                port:
+                  number: 80
+          - path: /testpath
+            pathType: Prefix
+            backend:
+              service:
+                name: test
+                port:
+                  number: 80
+```
