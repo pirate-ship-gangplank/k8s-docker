@@ -78,3 +78,58 @@ spec:
                 port:
                   number: 80
 ```
+
+## 데몬셋 (DaemonSet)
+* 디플로이먼트의 replicas가 노드 수만큼 정해져 있으며, 노드 한 대당 파드 한 개만을 생성한다.
+* 데몬셋의 일부 대표적인 용도
+  * 모든 노드에서 클러스터 스토리지 데몬 실행
+  * 모든 노드에서 로그 수집 데몬 실행
+  * 모든 노드에서 노드 모니터링 데몬 실행
+```yaml
+# DaemonSet Spec Example
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-elasticsearch
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-logging
+spec:
+  selector:
+    matchLabels:
+      name: fluentd-elasticsearch
+  template:
+    metadata:
+      labels:
+        name: fluentd-elasticsearch
+    spec:
+      tolerations:
+      # this toleration is to have the daemonset runnable on master nodes
+      # remove it if your masters can't run pods
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: fluentd-elasticsearch
+        image: quay.io/fluentd_elasticsearch/fluentd:v2.5.2
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+```
