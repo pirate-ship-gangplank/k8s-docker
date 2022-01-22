@@ -13,12 +13,12 @@ apiVersion: v1
 kind: Service
 ...
 spec:
-	ports:
-		- name: http
-		  protocol: TCP
-		  port: 80 # 서비스가 파드로 보내줄 연결 포트
-		  targetPort: 80
-		  nodePort: 30000 # 30000 port 오픈
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80 # 서비스가 파드로 보내줄 연결 포트
+      targetPort: 80
+      nodePort: 30000 # 30000 port 오픈
 ```
 
 → 워커 노드의 IP + 오픈된 노드 포트로 접속했을때 파드 접속 성공
@@ -55,15 +55,15 @@ spec:
 ...
 rules:
 - http:
-	paths:
-	- path:  # 노드포트/ 경로인 경우 hname-svc-default 서비스와 연결된 파드와 연결
-		backend:
-			serviceName: hname-svc-default
-			servicePort: 80
-	- path: /ip  # 노드포트/ip 경로로 들어오면 ip-svc 서비스와 연결된 파드와 연결
-		backend:
-			serviceName: ip-svc
-			servicePort: 80
+    paths:
+    - path:  # 노드포트/ 경로인 경우 hname-svc-default 서비스와 연결된 파드와 연결
+        backend:
+          serviceName: hname-svc-default
+          servicePort: 80
+    - path: /ip  # 노드포트/ip 경로로 들어오면 ip-svc 서비스와 연결된 파드와 연결
+        backend:
+          serviceName: ip-svc
+          servicePort: 80
 ...
 ```
 
@@ -72,17 +72,17 @@ rules:
 ```yaml
 ...
 spec:
-	ports:
-		- name: http  # http를 처리하기 위해 30100 포트로 들어온 것을 80번 포트로 넘긴다.
-			protocol: TCP
-			port: 80
-			targetPort: 80
-			nodePort: 30100
-		- name: https  # https를 처리하기 위해 30101 포트로 들어온 것을 443번 포트로 넘긴다.
-			protocol: TCP
-			port: 443
-			targetPort: 443
-			nodePort: 30101
+  ports:
+    - name: http  # http를 처리하기 위해 30100 포트로 들어온 것을 80번 포트로 넘긴다.
+        protocol: TCP
+        port: 80
+        targetPort: 80
+        nodePort: 30100
+    - name: https  # https를 처리하기 위해 30101 포트로 들어온 것을 443번 포트로 넘긴다.
+        protocol: TCP
+        port: 443
+        targetPort: 443
+        nodePort: 30101
 ...
 ```
 
