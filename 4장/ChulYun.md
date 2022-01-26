@@ -72,6 +72,35 @@
 ![컨테이너](./images/container.png)
 
 ---
+## 이미지 검색 및 내려받기
+* 이미지는 레지스트리(registry)라고 하는 저장소에 저장되어 있다.
+* 레지스트리는 도커 허브처럼 공개된 레지스트리일 수도 있고, 내부에서 직접 구축한 레지스트리일 수도 있다.
+
+#### 이미지 검색하기
+```shell
+> docker search <검색어>
+```
+* 검색어를 포함하는 이미지를 찾는다.
+* 이미지는 애플리케이션, 미들웨어 등 고유한 목적에 맞게 패키지되어 있다.
+* docker search 로 찾은 이미지는 docker pull 로 내려받을 수 있다.
+
+```shell
+> docker pull <이미지>
+```
+* 이미지를 내려받을 때 사용하는 태그, 레이어, 이미지의 고유 식별 값 등을 볼 수 있다.
+* 태그(tag)
+  * Using default tag와 함께 뒤에 따라오는 태그 이름을 통해 이미지를 내려받을 때 사용한 이미지를 알 수 있다.
+  * 아무런 값을 주지 않고, 이미지 이름만으로 pull 하면 latest 태그가 적용된다. latest 태그는 가장 최신 이미지를 의미한다.
+* 레이어(layer)
+  * 하나의 이미지는 여러 레이어로 이루어져 있어서 레이어마다 Pull complete 메시지가 발생한다.
+* 다이제스트(digest)
+  * 이미지의 고유 식별자로, 이미지에 포함된 내용과 이미지의 생성 환경을 식별할 수 있다.
+  * 식별자는 해시 함수로 생성되며, 이미지가 동일한지 검증하는 데 사용한다.
+* 상태(status)
+  * 이미지를 내려받은 레지스트리, 이미지, 태그 등의 상태 정보를 확인할 수 있다.
+  * 형식은 '레지스트리 이름/이미지 이름 이름:태그' 이다.
+
+---
 ## 참고자료
 [컨트롤 그룹](https://access.redhat.com/documentation/ko-kr/red_hat_enterprise_linux/6/html/resource_management_guide/ch01) </br>
 [네임스페이스와 cgroup](https://www.nginx.com/blog/what-are-namespaces-cgroups-how-do-they-work/#pid-namespaces) </br>
