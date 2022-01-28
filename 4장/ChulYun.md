@@ -100,6 +100,19 @@
   * 이미지를 내려받은 레지스트리, 이미지, 태그 등의 상태 정보를 확인할 수 있다.
   * 형식은 '레지스트리 이름/이미지 이름 이름:태그' 이다.
 
+#### 컨테이너 실행
+```shell
+> docker run -d --restart always nginx
+```
+* -d (--detach): 컨테이너를 백그라운드에서 실행
+* --restart always: 예상치 못한 오류가 발생하거나 리눅스 시스템에서 도커 서비스가 중지되는 경우에 컨테이너도 중지되는데, 이때 중지된 컨테이너를 즉시 재시작 하거나 리눅스 시스템에서 도커 서비스가 작동할 때 컨테이너를 자동으로 시작한다.
+* 도커에서 실행한 컨테이너는 호스트 네트워크와 도커 네트워크를 연결하기 위해 포트를 열어주어야 한다.
+* 아래의 명령어와 같이 -p 옵션을 통해 '호스트 네트워크:도커 네트워크'로 요청을 전달하도록 설정할 수 있다.
+```shell
+> docker run -p 8080:80 --name named-nginx --restart always nginx
+# 호스트 네트워크 8080 포트로 요청이 들어오면 named-nginx 라는 이름을 가진 nginx 컨테이너의 80 포트로 요청을 전달한다.
+```
+
 ---
 ## 참고자료
 [컨트롤 그룹](https://access.redhat.com/documentation/ko-kr/red_hat_enterprise_linux/6/html/resource_management_guide/ch01) </br>
