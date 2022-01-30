@@ -27,3 +27,54 @@
 * 오브젝트 배포에 피룡한 사양이 이미 정의된 차트(Chart)라는 패키지를 활용한다.
 * 헬름 차트는 자체적인 템플릿 문법으로 사용하므로 가변적인 인자를 배포할 때 적용해 다양한 배포 환경에 맞추거나 원하는 조건을 적용할 수 있다.
 
+## Kustomize 실습해 보기
+* 쿠버네티스에서 오브젝트에 대한 수정 사항을 반영하려면 사용자가 직접 yaml 파일을 수정해야 한다.
+* 커스터마이즈는 yaml 파일에 정의된 값을 사용자가 원하는 값으로 변경할 수 있다.
+* kustomize 명령과 create 옵션으로 kustomizaion.yaml 이라는 기본 manifest 파일을 민들고, 이 파일에 변경해야 하는 값을 적용할 수 있다.
+
+```shell
+# kustomize create 명령을 통해 kustomization.yaml 파일을 생성할 수 있다.
+> kustomize create --namespace=metallb-system --resources namespace.yaml,metallb.yaml,metallb-l2config.yaml
+```
+* --namespace는 작업의 네임스페이스를 설정한다.
+* --resources는 kustomize 명령을 이용해서 kustomization.yaml 을 만들기 위한 소스 파일을 정의한다.
+```yaml
+# 아래는 위 명령을 통해 생성된 kustomization.yaml 내용이다.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - metallb.yaml
+  - metallb-l2config.yaml
+namespace: metallb-system
+````
+
+
+* kustomize edit set image 옵션을 통해 태그를 지정할 수 있다.
+```shell
+> kustomize edit set image metallb/controller:v0.8.2
+> kustomize edit set image metallb/speaker:v0.8.2
+```
+```yaml
+# 아래는 위 명령어를 통해 수정된 kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- namespace.yaml
+- metallb.yaml
+- metallb-l2config.yaml
+namespace: metallb-system
+images:
+- name: metallb/controller
+  newTag: v0.8.2
+- name: metallb/speaker
+  newTag: v0.8.2
+```
+
+
+* kustomize build 명령으로 MetalLB 설치를 위한 Manifest 를 생성할 수 있다.
+* kubectl apply -f 를 통해 빌드된 Manifest 를 적용할 수 있다.
+* 아래의 명령에서는 생성된 Manifest 의 결과가 kubectl apply 인자로 전달되도록 배포하는 방법이다.
+```shell
+> kustomize build | kubectl apply -f -
+```
