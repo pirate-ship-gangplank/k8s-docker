@@ -71,10 +71,66 @@ images:
   newTag: v0.8.2
 ```
 
-
 * kustomize build 명령으로 MetalLB 설치를 위한 Manifest 를 생성할 수 있다.
 * kubectl apply -f 를 통해 빌드된 Manifest 를 적용할 수 있다.
 * 아래의 명령에서는 생성된 Manifest 의 결과가 kubectl apply 인자로 전달되도록 배포하는 방법이다.
 ```shell
 > kustomize build | kubectl apply -f -
+```
+
+## Helm 실습해 보기
+* 헬름은 쿠버네티스에 패키지를 손쉽게 배포할 수 있도록 도와주는 패키지 매니저이다.
+* 다양한 요구 조건을 처리할 수 있도록 리소스를 편집하거나 변수를 넘겨서 패키지를 만들 수 있는데, 이를 차트라고 한다.
+* 헬름의 기본 저장소는 artifacthub.io 이다.
+
+```shell
+# 아래 명령을 통해 헬름 차트 저장소를 추가한다.
+> helm repo add <name> <repo uri>
+
+# 아래의 명령을 통해 헬름 차트 저장소 목록을 확인할 수 있다.
+> helm repo list
+
+# 아래의 명령을 통해 저장소가 추가된 이휴에 변경된 차트가 있다면 변경된 정보를 캐시에 업데이트하여 최신 차트 정보를 동기화한다.
+> helm repo update
+```
+* helm 차트를 설치할 때는 helm install 을 이용하면 된다.
+```shell
+# helm install <release name> [-f <config path>] [--namespace=<namespace name>] [--set <key>=<value>,...]
+helm install metallb edu/metallb \
+> --namespace=metallb-system \
+> --create=namespace \
+> --set controller.tag=v0.8.3 \
+> --set speaker.tag=v0.8.3 \
+> --set configmap.ipRange=192.168.56.11-192.168.56.29
+```
+* --namespace: 헬름 차트를 통해서 생성되는 애플리케이션이 위치할 네임스페이스를 지정한다.
+* --create-namespace: 네임스페이스 옵션으로 지정된 네임스페이스가 존재하지 않는 경우 네임스페이스를 생성한다.
+* --set: 헬름에서 사용할 변수를 명령 인자로 전달한다. key1=value1, key2=value2 와 같이 ,(쉼표)를 사용하여 한 줄에서 여러 인자를 넘겨줄 수도 있다.
+
+```shell
+# 헬름에 필요한 변수를 확인하는 명령어
+> helm show values <차트>
+# or
+> helm inspect values <차트>
+```
+```shell
+# 차트 설치 후, 설정 내용을 수정하여 다시 배포한다.
+# helm upgrade <release name> [-f config path] <chart>
+> helm upgrade metallb edu/metallb \
+> --namespace=metallb-system \
+> --set configmap.ipRange=192.168.56.11-192.168.56.29
+```
+```shell
+# 설치된 차트 목록을 검색한다.
+> helm ls
+
+# 모든 네임스페이스의 차트 목록을 검색한다.
+> helm ls --all-namespace
+# or
+> helm ls -A
+```
+```shell
+# 설치된 차트를 제거한다.
+# helm uninstall <release name>
+> helm uninstall metallb
 ```
