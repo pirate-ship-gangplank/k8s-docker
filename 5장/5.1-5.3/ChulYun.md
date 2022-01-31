@@ -175,3 +175,67 @@ helm install metallb edu/metallb \
   * Exists는 사용했을 때, value는 반드시 생략해야하며, key와 effect가 일치하는지 확인한다.
     * key와 effect를 모두 생략한 상태에서 Exists 연산자만 사용하면 테인트의 key와 effect는 모든 key와 effect를 의미하므로, 모든 것이 톨러레이션된다.
 
+#### taints, toleration 사용해보기
+* 현재 클러스터 구성은 마스터 노드 1, 워커 노드 3으로 구성되어 있고, 이중에 워커 노드2 에 테인트를 설정하였다.
+![테인트](./images/taints.png)
+![테인트 결과](./images/taints_result.png)
+* 아래와 같이 deployment 를 정의하여 nginx 파드를 5대를 생성시켜 보았다.
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-nginx-deployment
+  labels:
+    app: test-nginx-deployment
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: test-nginx-pod
+  template:
+    metadata:
+      labels:
+        app: test-nginx-pod
+    spec:
+      containers:
+        - name: test-nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+```
+* 생성된 deployment의 파드들이 위치한 노드를 kubectl get pods -o wide 명령을 통해 확인한다.
+![tains_pod_result](./images/taints_pod_result.png)
+* w2-k8s를 제외한 w1-k8s, w3-k8s 노드에만 nginx 파드들이 배치된 것을 확인할 수 있다.
+
+
+* 이제 톨러레이션을 정의해보자
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-nginx-deployment
+  labels:
+    app: test-nginx-deployment
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: test-nginx-pod
+  template:
+    metadata:
+      labels:
+        app: test-nginx-pod
+    spec:
+      containers:
+        - name: test-nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+      tolerations:
+        - key: "hello"
+          value: "world"
+          operator: "Equal"
+          effect: "NoSchedule"
+```
+![톨러레이션을 통한 파드 스케줄링](./images/tolerations_result.png)
+* 위 결과를 확인해보면 톨러레이션을 통해 w2-k8s 노드에 nginx 파드가 스케줄링된 것을 확인할 수 있다.
