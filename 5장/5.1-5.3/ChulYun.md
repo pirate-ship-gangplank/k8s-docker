@@ -134,3 +134,44 @@ helm install metallb edu/metallb \
 # helm uninstall <release name>
 > helm uninstall metallb
 ```
+
+### Taints 와 Tolerations
+
+#### taints
+* 테인트는 노드마다 설정이 가능하며, 설정한 노드에는 파드가 스케줄되지 않는다.
+* key, value, effect 정의를 통해 테인트를 설정한다.
+* 일반적으로 마스터 노드에는 클러스터 관련 파드를 제외하고, 다른 파드 들은 스케줄링되지 않는데 이는 테인트 설정이 되어있기 때문이다.
+```shell
+# node1 노드에 테인트를 배치한다. 테인트에는 키 key1, 값 value1 및 테인트 이펙트(effect) NoSchedule이 있다.
+# 이는 일치하는 톨러레이션이 없으면 파드를 node1 에 스케줄할 수 없음을 의미한다.
+> kubectl taint nodes node1 key1=value1:NoSchedule
+```
+```shell
+# 실제로 현재 실습중인 마스터 노드에 describe 명령을 살펴보면 톨러레이션 없이는 파드가 스케줄되지 않도록 설정이 되어 있는 것을 확인할 수 있다.
+> kubectl describe node m-k8s | grep Taints:
+> Taints:             node-role.kubernetes.io/master:NoSchedule
+```
+```shell
+# 테인트 삭제는 아래와 같이 명령어를 사용하면 된다.
+> kubectl taint nodes node1 key1=value1:NoSchedule-
+```
+
+#### taints effect
+* NoSchedule
+  * 노드에 파드가 배치되는 것을 거부한다.
+  * 테인트가 설정될 때, 해당 노드에 이미 파드가 존재하면 유지한다.
+* PreferNoSchedule
+  * 다른 노드에 파드 배치가 불가능할 때는 노드에 파드가 배치된다.
+  * 테인트가 설정될 때, 해당 노드에 이미 파드가 존재하면 유지한다.
+* NoExecute
+  * 노드에 파드 배치를 거부한다.
+  * 테인트가 설정될 때, 해당 노드에 이미 파드가 존재한다면 노드에서 파드를 제거한다.
+
+#### tolerations
+* 톨러레이션은 테인트가 설정된 노드로 들어가기 위한 열쇠와 같은 역할을 한다. (toleration은 사전적으로 용인, 관용이라는 뜻으로, 테인트의 설정을 허용한다는 뜻으로 해석하면 된다.)
+* key, value, effect, operator 정의를 통해 톨러레이션을 설정한다.
+* operator에는 Equal, Exists 연산자가 존재한다. (기본값은 Equal)
+  * Equal은 톨러레이션의 key, value, effect 조건에 일치하는지 확인한다.
+  * Exists는 사용했을 때, value는 반드시 생략해야하며, key와 effect가 일치하는지 확인한다.
+    * key와 effect를 모두 생략한 상태에서 Exists 연산자만 사용하면 테인트의 key와 effect는 모든 key와 effect를 의미하므로, 모든 것이 톨러레이션된다.
+
