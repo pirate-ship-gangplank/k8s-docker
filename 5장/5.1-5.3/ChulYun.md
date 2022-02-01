@@ -239,3 +239,26 @@ spec:
 ```
 ![톨러레이션을 통한 파드 스케줄링](./images/tolerations_result.png)
 * 위 결과를 확인해보면 톨러레이션을 통해 w2-k8s 노드에 nginx 파드가 스케줄링된 것을 확인할 수 있다.
+
+### RBAC (Role-Based Access Control)
+* 역할을 기반으로 쿠버네티스 시스템의 권한을 관리한다.
+* Role: 특정 api나 리소스에 대한 권한들을 명시해둔 정책이다.
+  * Role은 apiGroups, resources, verbs 속성을 가진다.
+* Binding: 일반 사용자 및 그룹, 서비스 계정을 롤에 연결한다.
+
+#### Role, ClusterRole
+* RBAC의 Role에는 Role과 ClusterRole로 구분된다. 
+* Role
+  * 해당 롤을 가진 주체가 특정 namespace에서 접근할 수 있는 권한을 정의한다.
+* ClusterRole
+  * 해당 롤을 가진 주체가 Cluster에서 접근할 수 있는 권한을 정의한다.
+
+#### RoleBinding, ClusterRoleBinding
+* RoleBinding
+  * 일반 사용자 및 그룹/서비스 계정과 롤을 연결한다.
+* ClusterRoleBinding
+  * 일반 사용자 및 그룹/서비스 계정과 클러스터 롤을 연결한다.
+* subjects 속성을 통해 권한을 사용할 주체와 해당 권한을 연결한다.
+* subject는 RBAC에서 특정 행위를 수행하는 주체이다.
+
+[RBAC 참고 자료](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) 에서 예제를 살펴볼 수 있다.
