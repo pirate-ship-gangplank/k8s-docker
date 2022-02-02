@@ -160,3 +160,7 @@ spec:
 5. containerd는 containerd-shim이라는 자식 프로세스를 생성하여 컨테이너를 관리한다.
    1. containerd와 container-shim은 부모와 자식 관계이다.
 6. containerd가 생성한 containerd-shim 프로세스는 컨테이너를 조작한다.
+
+---
+#### 참고자료
+[컨테이너 인프라 환경 구축을 위한 쿠버네티스/도커](http://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode=9791165215743&orderClick=LEa&Kc=)
