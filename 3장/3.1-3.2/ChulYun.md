@@ -230,3 +230,7 @@ spec:
 > kubectl rollout undo deployment rollout-nginx --to-revision=1
 > 
 ```
+
+---
+#### 참고자료
+[컨테이너 인프라 환경 구축을 위한 쿠버네티스/도커](http://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode=9791165215743&orderClick=LEa&Kc=)
